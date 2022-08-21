@@ -1,0 +1,99 @@
+---
+- hosts: pantheon_cron
+  roles:
+    - ten7.flightdeck_base
+  tasks:
+    - name: Create a temp directory to store files needed by the run
+      tempfile:
+        state: directory
+        prefix: "ansible-deploy-"
+      register: _run_temp_dir
+      notify:
+        - clear caches
+    - name: Install necessary software.
+      community.general.apk:
+        name: "{{ _packages | join(',') }}"
+        state: present
+        update_cache: yes
+      notify:
+        - clear apk cache
+      vars:
+        _packages:
+          - "zlib"
+          - "php8"
+          - "git"
+          - "patch"
+          - "curl"
+          - "php8-bcmath"
+          - "php8-ctype"
+          - "php8-curl"
+          - "php8-dom"
+          - "php8-fileinfo"
+          - "php8-intl"
+          - "php8-json"
+          - "php8-ldap"
+          - "php8-mbstring"
+          - "php8-openssl"
+          - "php8-phar"
+          - "php8-phar"
+          - "php8-soap"
+          - "php8-session"
+          - "php8-simplexml"
+          - "php8-sodium"
+          - "php8-tokenizer"
+          - "php8-xml"
+          - "php8-xmlreader"
+          - "php8-xmlwriter"
+          - "php8-zip"
+          - "php8-zlib"
+          - "composer"
+          - "rsync"
+          - "openssh-client"
+    - name: Install Terminus
+      get_url:
+        url: "https://github.com/pantheon-systems/terminus/releases/download/3.0.7/terminus.phar"
+        dest: "/usr/local/bin/terminus"
+        owner: "{{ pantheon_cron_user }}"
+        group: "{{ pantheon_cron_group }}"
+        mode: "u=rx,g=rx,o="
+    - name: Deploy key scripts.
+      template:
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+        owner: "{{ pantheon_cron_user }}"
+        group: "{{ pantheon_cron_group }}"
+        mode: "u=rx,g=rx,o="
+      loop:
+        - src: "templates/pantheon-cron.sh.j2"
+          dest: "/usr/local/bin/pantheon-cron"
+    - name: Update permissions of key directories
+      file:
+        path: "{{ item }}"
+        state: directory
+        owner: "{{ pantheon_cron_user }}"
+        group: "{{ pantheon_cron_group }}"
+        mode: "u=rwx,g=rwx,o="
+      loop:
+        - "/ansible"
+        
+    - name: Create the /usr/bin/php symlink
+      file:
+        src: "/usr/bin/php8"
+        dest: "/usr/bin/php"
+        state: link
+        owner: "root"
+        group: "root"
+        force: yes        
+        
+  handlers:
+    - name: clear caches
+      shell: >
+        rm -rf {{ item }}
+      args:
+        warn: no
+      loop:
+        - "/tmp/*"
+        - "/var/cache/apk/*"
+        - "/var/www/.composer/cache"
+        - "/root/.ansible/tmp"
+        - "/root/.cache"

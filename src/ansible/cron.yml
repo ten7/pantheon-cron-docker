@@ -1,0 +1,7 @@
+---
+- hosts: pantheon_cron
+  tasks:
+    - name: Run cron
+      include_role:
+        name: "ten7.pantheon_cron"
+

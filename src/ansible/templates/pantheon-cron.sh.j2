@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+
+case "$1" in
+
+  "")
+    if [ -n "${PANTHEON_CRON_CONFIG}" ]; then
+      config_file=$(mktemp "${TMPDIR:-/tmp/}$(basename $0).XXXXXXXXXXXX")
+      echo "$PANTHEON_CRON_CONFIG" | base64 -d > $config_file
+      ansible-playbook -i /etc/ansible/hosts -i /ansible/inventories/pantheon_cron.yml -e "@${config_file}" /ansible/cron.yml
+    elif [ -f "${PANTHEON_CRON_CONFIG_FILE}" ]; then
+      ansible-playbook -i /etc/ansible/hosts -i /ansible/inventories/pantheon_cron.yml -e "@${PANTHEON_CRON_CONFIG_FILE}" /ansible/cron.yml
+    elif [ -f "/config/pantheon-cron/pantheon-cron.yml" ]; then
+      ansible-playbook -i /etc/ansible/hosts -i /ansible/inventories/pantheon_cron.yml  -e "@/config/pantheon-cron/pantheon-cron.yml" /ansible/cron.yml
+    else
+      ansible-playbook -i /etc/ansible/hosts -i /ansible/inventories/pantheon_cron.yml /ansible/cron.yml
+    fi
+    ;;
+
+  *)
+    echo $"Usage: $0"
+    exit 1
+    ;;
+
+esac

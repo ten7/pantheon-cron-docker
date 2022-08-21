@@ -1,0 +1,23 @@
+---
+flighdeck_motd_name: "Pantheon-cron 1.0.0"
+
+pantheon_cron_user: "app"
+pantheon_cron_group: "app"
+
+flightdeck_groups:
+  - name: "{{ pantheon_cron_user }}"
+
+flightdeck_users:
+  - name: "{{ pantheon_cron_user }}"
+    group: "{{ pantheon_cron_group }}"
+    groups:
+      - "{{ pantheon_cron_group }}"
+    home: "/home/{{ pantheon_cron_user }}"
+
+flightdeck_root_prompt: '\u@pantheon-cron:\w# '
+flightdeck_user_prompt: '\u@pantheon-cron:\w$ '
+
+flightdeck_motd_links:
+  - name: 'Code & docs'
+    url: 'https://github.com/ten7/pantheon-cron'
+

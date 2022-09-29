@@ -20,6 +20,6 @@ RUN ansible-galaxy install -fr /ansible/requirements.yml && \
 USER app
 
 # Set the entrypoint and default command.
-#ENTRYPOINT ["docker-entrypoint.sh"]
-#CMD ["pantheon-cron"]
+ENTRYPOINT ["docker-entrypoint.sh"]
+CMD ["pantheon-cron"]
 
